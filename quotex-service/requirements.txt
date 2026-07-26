@@ -1,0 +1,27 @@
+# ═══════════════════════════════════════════════════════════════
+#  RTX EARN — Quotex Data Service — Python Dependencies
+# ═══════════════════════════════════════════════════════════════
+
+# pyquotex সরাসরি pip রিপোজিটরিতে নেই, তাই GitHub থেকে ইনস্টল করতে হয়।
+# Render-এ deploy করার সময় build command-এ এটা আলাদাভাবে চালাতে হবে:
+#   pip install git+https://github.com/cleitonleonel/pyquotex.git
+# (এই লাইনটা requirements.txt-এর ভিতরেও রাখা যায়, কিন্তু কিছু হোস্টিং
+#  প্ল্যাটফর্মে VCS-based লাইন আলাদাভাবে হ্যান্ডেল করা ভালো — নিচে
+#  উভয়ভাবে দেওয়া থাকলো, Render build command-এ ব্যবহার করার নির্দেশনা
+#  এর পরের ফাইলে দেব)
+git+https://github.com/cleitonleonel/pyquotex.git
+
+# ── ওয়েব সার্ভার ────────────────────────────────────────────────
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+
+# ── pyquotex-এর নিজস্ব ডিপেন্ডেন্সি (pyquotex ইনস্টলের সময় এমনিতেই
+#    আসার কথা, কিন্তু ভার্সন কনফ্লিক্ট এড়াতে এখানেও pin করা হলো) ────
+websocket-client>=1.8.0
+requests>=2.31.0
+beautifulsoup4>=4.12.2
+playwright>=1.44.0
+numpy>=2.2.3,<3.0.0
+
+# ── এনভায়রনমেন্ট ভ্যারিয়েবল লোড করার জন্য (লোকাল টেস্টিং-এ কাজে লাগবে) ─
+python-dotenv==1.0.1
