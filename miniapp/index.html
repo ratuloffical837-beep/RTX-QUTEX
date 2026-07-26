@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>RTX EARN — সিগনাল সিস্টেম</title>
+  <meta name="description" content="RTX EARN — Real ও OTC মার্কেট ট্রেডিং সিগনাল" />
+
+  <!-- ── Telegram Mini App SDK — Telegram-এর ভিতরে খোলা হলে window.Telegram
+       অবজেক্ট এভাবেই পাওয়া যায়। এই স্ক্রিপ্ট ছাড়া App.jsx-এর
+       window.Telegram?.WebApp কাজ করবে না ── -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <!-- ── থিম কালার (Bybit-স্টাইল ডার্ক ব্যাকগ্রাউন্ড, ব্রাউজার address
+       bar/status bar ম্যাচ করার জন্য) ── -->
+  <meta name="theme-color" content="#0b0e11" />
+
+  <style>
+    /* ফ্ল্যাশ-অফ-হোয়াইট এড়াতে React লোড হওয়ার আগেই ব্যাকগ্রাউন্ড সেট */
+    html, body {
+      margin: 0;
+      padding: 0;
+      background-color: #0b0e11;
+      overscroll-behavior: none; /* Telegram WebView-তে পুল-টু-রিফ্রেশ/বাউন্স বন্ধ */
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.jsx"></script>
+</body>
+  </html>
