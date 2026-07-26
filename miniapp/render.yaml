@@ -1,0 +1,46 @@
+# ═══════════════════════════════════════════════════════════════
+#  RTX EARN — Mini App — Render Deployment Config (Static Site)
+#
+#  ⚠️ Monorepo সেটআপ: rootDir দিয়ে বলে দেওয়া হয়েছে এই সার্ভিসটা শুধু
+#  miniapp/ ফোল্ডারের ভিতরের কোড ব্যবহার করবে।
+#
+#  ⚠️ গুরুত্বপূর্ণ: Vite এনভায়রনমেন্ট ভ্যারিয়েবল (VITE_*) build-time-এ
+#  bundle-এর ভিতরে বসে যায় — মানে এই envVars গুলো Render-এ অবশ্যই
+#  বসাতে হবে "Static Site" সার্ভিসের Environment ট্যাবে, deploy করার
+#  আগে। পরে বদলালে আবার নতুন করে build (redeploy) করতে হবে।
+# ═══════════════════════════════════════════════════════════════
+
+services:
+  - type: web
+    name: rtx-earn-miniapp
+    runtime: static
+    rootDir: miniapp
+
+    buildCommand: "npm install && npm run build"
+    staticPublishPath: dist
+
+    envVars:
+      - key: VITE_FIREBASE_API_KEY
+        sync: false
+      - key: VITE_FIREBASE_AUTH_DOMAIN
+        sync: false
+      - key: VITE_FIREBASE_PROJECT_ID
+        sync: false
+      - key: VITE_FIREBASE_STORAGE_BUCKET
+        sync: false
+      - key: VITE_FIREBASE_MESSAGING_SENDER_ID
+        sync: false
+      - key: VITE_FIREBASE_APP_ID
+        sync: false
+      - key: VITE_BACKEND_URL
+        sync: false
+
+    # ── SPA রাউটিং — React Router-এর মতো ক্লায়েন্ট-সাইড রাউটিং না
+    #    থাকলেও, Telegram Mini App-এর deep-link/refresh সমস্যা এড়াতে
+    #    সব পাথ index.html-এ রিরাইট করে দেওয়া হলো ──────────────────
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+
+    autoDeploy: true
