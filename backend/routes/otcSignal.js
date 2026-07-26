@@ -1,19 +1,15 @@
 /**
  * ═══════════════════════════════════════════════════════════════
- *  RTX EARN — Route: /api/signal
+ *  RTX EARN — Route: /api/signal  (আপডেটেড ভার্সন — v2)
  *
- *  কাজ: Mini App থেকে রিকোয়েস্ট এলে (symbol + market=real/otc দিয়ে):
- *  ১. Python Quotex Data Service থেকে candle ডেটা আনা
- *  ২. signalEngine.js (backend ভার্সন) দিয়ে ১১-ইন্ডিকেটর analysis চালানো
- *  ৩. ফলাফল (CALL/PUT + strength + confidence + সব ইন্ডিকেটরের breakdown) ফেরত দেওয়া
+ *  ⚠️ এটা আগের routes/otcSignal.js-এর প্যাচড ভার্সন। শুধু একটা
+ *  পরিবর্তন হয়েছে: রেসপন্সে এখন `lastCandle: { open, close }` যোগ
+ *  করা হয়েছে, যেটা miniapp/src/App.jsx-এর checkResult() ফাংশন
+ *  ব্যবহার করে বোঝে যে predicted CALL/PUT আসলে সঠিক হয়েছিল কিনা
+ *  (শেষ closed candle-এর open vs close তুলনা করে)।
  *
- *  ⚠️ এই ফাইলটা ../signalEngine.js এর উপর নির্ভর করে (backend-এর নিজস্ব
- *  CommonJS ভার্সন — পরের ফাইল হিসেবে দেব, এটা frontend-এর signalEngine.js
- *  থেকে আলাদা ফাইল কারণ ES modules vs CommonJS syntax আলাদা)।
- *
- *  Query params:
- *    GET /api/signal?symbol=EURUSD&market=real
- *    GET /api/signal?symbol=EURUSD&market=otc
+ *  এই ফাইলটা তোমার আগের routes/otcSignal.js-কে সম্পূর্ণ replace করবে —
+ *  পুরনোটা মুছে এটা একই জায়গায় (routes/otcSignal.js নামে) বসাও।
  * ═══════════════════════════════════════════════════════════════
  */
 
@@ -27,12 +23,9 @@ try {
   console.warn('⚠️ ../signalEngine.js এখনো তৈরি হয়নি — /api/signal রুট কাজ করবে না:', e.message)
 }
 
-const QUOTEX_SERVICE_URL = process.env.QUOTEX_SERVICE_URL // যেমন: https://rtx-earn-quotex-service.onrender.com
-const SERVICE_API_KEY = process.env.SERVICE_API_KEY       // Python service-এর সাথে মিলতে হবে
+const QUOTEX_SERVICE_URL = process.env.QUOTEX_SERVICE_URL
+const SERVICE_API_KEY = process.env.SERVICE_API_KEY
 
-// ── ছোট in-memory cache — একই symbol/market ৫ সেকেন্ডের মধ্যে বারবার
-//    রিকোয়েস্ট এলে Python service-কে বারবার কল না করে cache থেকে দেওয়া,
-//    যাতে অনেক ইউজার একসাথে থাকলে Python service-এ চাপ না পড়ে ──────
 const CACHE_TTL_MS = 5000
 const cache = new Map() // key: "symbol:market" → { data, expiresAt }
 
@@ -59,7 +52,6 @@ router.get('/', async (req, res) => {
       return res.json({ ...cached.data, cached: true })
     }
 
-    // ── Python Quotex service থেকে candle আনা ────────────────────
     const url = `${QUOTEX_SERVICE_URL}/candles?symbol=${encodeURIComponent(symbol)}&market=${market}&count=150&period=60`
     const upstreamRes = await fetch(url, {
       headers: { 'X-API-Key': SERVICE_API_KEY || '' },
@@ -81,17 +73,28 @@ router.get('/', async (req, res) => {
       })
     }
 
-    // ── Signal Engine চালানো ──────────────────────────────────────
     const result = runSignalEngine(candles)
+
+    // ── 🆕 lastCandle — শেষ (সবচেয়ে recent, ইতিমধ্যে closed) candle-এর
+    //    open/close, যেটা result-checking-এ actual direction বোঝার
+    //    জন্য দরকার (fetchCandles Python service-এ already-formed
+    //    candle বাদ দিয়ে শুধু closed candle পাঠায়, তাই এটা নির্ভরযোগ্য) ──
+    const lastRaw = candles[candles.length - 1]
+    const lastCandle = {
+      open: lastRaw.open,
+      close: lastRaw.close,
+      datetime: lastRaw.datetime,
+    }
 
     const responseData = {
       symbol,
       market,
-      direction: result.direction,       // 'CALL' | 'PUT' | null
-      strength: result.strength,         // 0-100
-      confidence: result.confidence,     // 0-100
-      breakdown: result.breakdown,       // সব ১১টা ইন্ডিকেটরের BULL/BEAR — সবসময় দেখাবে
+      direction: result.direction,
+      strength: result.strength,
+      confidence: result.confidence,
+      breakdown: result.breakdown,
       candleCount: candles.length,
+      lastCandle,              // 🆕 নতুন ফিল্ড
       generatedAt: Date.now(),
     }
 
