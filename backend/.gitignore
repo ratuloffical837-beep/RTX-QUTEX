@@ -1,0 +1,34 @@
+# ═══════════════════════════════════════════════════════════════
+#  RTX EARN — Node.js Backend — .gitignore
+# ═══════════════════════════════════════════════════════════════
+
+# ── এনভায়রনমেন্ট সিক্রেট — সবচেয়ে গুরুত্বপূর্ণ ────────────────────
+.env
+.env.local
+*.env
+!.env.example
+
+# ── Firebase service account key (যদি ফাইল হিসেবে কেউ রাখে) ───────
+serviceAccountKey.json
+*-firebase-adminsdk-*.json
+
+# ── Node.js ────────────────────────────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+
+# ── লগ ফাইল ──────────────────────────────────────────────────────
+*.log
+logs/
+
+# ── OS/এডিটর জাংক ────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# ── Build/dist artifacts ─────────────────────────────────────────
+dist/
+build/
