@@ -1,0 +1,47 @@
+# ═══════════════════════════════════════════════════════════════
+#  RTX EARN — Quotex Data Service — Render Deployment Config
+#
+#  এই ফাইলটা repo-র রুটে রাখলে Render "Blueprint" হিসেবে ধরে নিয়ে
+#  স্বয়ংক্রিয়ভাবে সব সেটিংস বসিয়ে দেবে (Render Dashboard → New →
+#  Blueprint → এই repo সিলেক্ট করলেই হবে)।
+#
+#  চাইলে render.yaml ছাড়াও ম্যানুয়ালি "New → Web Service" থেকে নিচের
+#  build/start command গুলো কপি করেও সেটআপ করা যায়।
+# ═══════════════════════════════════════════════════════════════
+
+services:
+  - type: web
+    name: rtx-earn-quotex-service
+    runtime: python
+    plan: free   # প্রোডাকশনে স্টেবল রাখতে চাইলে পরে "starter"-এ বদলাও
+
+    # ── Build ধাপ ──────────────────────────────────────────────
+    # ১. requirements.txt থেকে সব ডিপেন্ডেন্সি (pyquotex সহ) ইনস্টল
+    # ২. playwright এর জন্য Chromium ব্রাউজার বাইনারি ডাউনলোড
+    #    (pyquotex কিছু অপারেশনে headless browser ব্যবহার করে)
+    buildCommand: "pip install -r requirements.txt && playwright install --with-deps chromium"
+
+    # ── Start কমান্ড ───────────────────────────────────────────
+    startCommand: "python3 quotex_service.py"
+
+    # ── Health check — Render নিজে থেকে এই এন্ডপয়েন্ট পিং করে
+    #    সার্ভিস বেঁচে আছে কিনা বুঝবে ──────────────────────────
+    healthCheckPath: /health
+
+    # ── এনভায়রনমেন্ট ভ্যারিয়েবল ──────────────────────────────────
+    # sync:false মানে মান এখানে লেখা হয়নি — Render Dashboard →
+    # Environment ট্যাব থেকে ম্যানুয়ালি বসাতে হবে (সিক্রেট বলে)
+    envVars:
+      - key: QUOTEX_EMAIL
+        sync: false
+      - key: QUOTEX_PASSWORD
+        sync: false
+      - key: QUOTEX_ACCOUNT_MODE
+        value: PRACTICE
+      - key: SERVICE_API_KEY
+        sync: false
+      - key: PYTHON_VERSION
+        value: 3.11.9
+
+    # ── Auto-deploy: main ব্রাঞ্চে push হলেই স্বয়ংক্রিয়ভাবে redeploy ──
+    autoDeploy: true
