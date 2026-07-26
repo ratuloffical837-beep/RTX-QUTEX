@@ -1,0 +1,44 @@
+# ═══════════════════════════════════════════════════════════════
+#  RTX EARN — Node.js Backend — Render Deployment Config
+#
+#  ⚠️ Monorepo সেটআপ: যেহেতু তুমি একটাই GitHub repo-তে সব ফোল্ডার
+#  (quotex-service/, backend/, miniapp/) রাখছো, তাই rootDir দিয়ে
+#  Render-কে বলে দেওয়া হয়েছে এই সার্ভিসটা শুধু backend/ ফোল্ডারের
+#  ভিতরের কোড ব্যবহার করবে, বাকি ফোল্ডার ignore করবে।
+#
+#  এই ফাইলটা repo-র রুটে রাখলে Render "Blueprint" মোডে সবগুলো
+#  সার্ভিস (Python + Node + React) একসাথে detect করতে পারবে, যদি
+#  প্রতিটার render.yaml একই মূল ফাইলে মার্জ করে দাও (এটা নিয়ে শেষে
+#  একটা কম্বাইনড render.yaml আলাদাভাবে দেখাবো)। আপাতত এটাকে
+#  আলাদা রেফারেন্স হিসেবে রাখো।
+# ═══════════════════════════════════════════════════════════════
+
+services:
+  - type: web
+    name: rtx-earn-backend
+    runtime: node
+    plan: free   # প্রোডাকশনে চাইলে পরে "starter"-এ বদলাও
+    rootDir: backend   # ← monorepo-তে এই লাইনটাই মূল পরিবর্তন
+
+    buildCommand: "npm install"
+    startCommand: "npm start"
+
+    healthCheckPath: /health
+
+    envVars:
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_ADMIN_CHAT_ID
+        sync: false
+      - key: MINI_APP_URL
+        sync: false
+      - key: FIREBASE_SERVICE_ACCOUNT
+        sync: false
+      - key: QUOTEX_SERVICE_URL
+        sync: false
+      - key: SERVICE_API_KEY
+        sync: false
+      - key: NODE_VERSION
+        value: 20.11.0
+
+    autoDeploy: true
